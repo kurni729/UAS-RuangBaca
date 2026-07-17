@@ -6,6 +6,61 @@ import { logAction } from '../utils/logger';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 10;
+
+// Helper: Get login attempt by IP
+const getLoginAttempt = async (ipAddress: string) => {
+  const result = await pool.query(
+    'SELECT * FROM login_attempts WHERE ip_address = $1',
+    [ipAddress]
+  );
+  return result.rows[0] || null;
+};
+
+// Helper: Increment login attempt
+const incrementLoginAttempt = async (ipAddress: string) => {
+  const existing = await getLoginAttempt(ipAddress);
+  
+  if (!existing) {
+    // First attempt: create new record
+    await pool.query(
+      'INSERT INTO login_attempts (ip_address, attempt_count) VALUES ($1, 1)',
+      [ipAddress]
+    );
+    return { attempt_count: 1, locked_until: null };
+  }
+
+  // Check if already locked
+  if (existing.locked_until && new Date(existing.locked_until) > new Date()) {
+    return existing;
+  }
+
+  // Increment attempt count
+  const newAttemptCount = existing.attempt_count + 1;
+  let lockedUntil = null;
+
+  if (newAttemptCount >= MAX_LOGIN_ATTEMPTS) {
+    lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000);
+  }
+
+  await pool.query(
+    `UPDATE login_attempts 
+     SET attempt_count = $1, locked_until = $2, updated_at = CURRENT_TIMESTAMP 
+     WHERE ip_address = $3`,
+    [newAttemptCount, lockedUntil, ipAddress]
+  );
+
+  return { attempt_count: newAttemptCount, locked_until: lockedUntil };
+};
+
+// Helper: Reset login attempt after successful login
+const resetLoginAttempt = async (ipAddress: string) => {
+  await pool.query(
+    'UPDATE login_attempts SET attempt_count = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE ip_address = $1',
+    [ipAddress]
+  );
+};
 
 // --- Password Policy Helper ---
 const isPasswordStrong = (password: string): { valid: boolean; message: string } => {
@@ -88,9 +143,21 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         const { nim, password } = req.body;
         const ipAddress = req.ip;
 
+        // 0. Cek apakah IP sedang terkunci
+        const existingAttempt = await getLoginAttempt(ipAddress);
+        if (existingAttempt && existingAttempt.locked_until && new Date(existingAttempt.locked_until) > new Date()) {
+            const timeLeftMs = new Date(existingAttempt.locked_until).getTime() - Date.now();
+            const timeLeftMinutes = Math.ceil(timeLeftMs / (1000 * 60));
+            return res.status(429).json({ 
+                message: `Terlalu banyak percobaan login yang salah! Silakan coba lagi dalam ${timeLeftMinutes} menit.` 
+            });
+        }
+
         // 1. Cari user berdasarkan NIM
         const userResult = await pool.query('SELECT * FROM users WHERE nim = $1', [nim]);
         if (userResult.rows.length === 0) {
+            // Increment attempt count
+            await incrementLoginAttempt(ipAddress);
             await logAction(null, 'FAILED_LOGIN', `Failed login attempt for NIM: ${nim}`, ipAddress);
             return res.status(401).json({ message: 'NIM atau password salah!' });
         }
@@ -100,18 +167,33 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         // 2. Verifikasi kesesuaian password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            // Increment attempt count
+            const newAttempt = await incrementLoginAttempt(ipAddress);
+            const attemptsLeft = MAX_LOGIN_ATTEMPTS - newAttempt.attempt_count;
+            
             await logAction(user.id, 'FAILED_LOGIN', `Invalid password for NIM: ${nim}`, ipAddress);
-            return res.status(401).json({ message: 'NIM atau password salah!' });
+            
+            let errorMessage = 'NIM atau password salah!';
+            if (attemptsLeft > 0) {
+                errorMessage += ` Anda memiliki ${attemptsLeft} percobaan lagi.`;
+            } else {
+                errorMessage += ` Akun Anda terkunci selama ${LOCKOUT_DURATION_MINUTES} menit.`;
+            }
+            
+            return res.status(401).json({ message: errorMessage });
         }
 
-        // 3. Buat JSON Web Token (JWT)
+        // 3. Reset login attempt setelah login berhasil
+        await resetLoginAttempt(ipAddress);
+
+        // 4. Buat JSON Web Token (JWT)
         const token = jwt.sign(
             { id: user.id, nim: user.nim, role: user.role }, 
             JWT_SECRET, 
             { expiresIn: '24h' }
         );
 
-        // 4. Set token sebagai HttpOnly Cookie
+        // 5. Set token sebagai HttpOnly Cookie
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // Gunakan HTTPS di produksi

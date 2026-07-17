@@ -46,8 +46,9 @@ Hanya Admin yang dapat mendaftarkan pengguna baru:
 1. Buka halaman login di `http://localhost:5173`
 2. Masukkan NIM dan password
 3. Klik tombol "Login"
-4. Jika login gagal lebih dari 5 kali berturut-turut, permintaan akan dibatasi sementara oleh rate limiting (15 menit)
-5. Setelah login berhasil, pengguna akan diarahkan ke dashboard sesuai rolenya (token disimpan di HttpOnly Cookie untuk keamanan)
+4. Jika login salah, Anda akan melihat pesan sisa percobaan login
+5. Jika login salah lebih dari 5 kali berturut-turut, akses dari IP Anda akan terkunci selama 10 menit
+6. Setelah login berhasil, pengguna akan diarahkan ke dashboard sesuai rolenya (token disimpan di HttpOnly Cookie untuk keamanan)
 
 ### Logout
 1. Klik tombol "Logout" di sidebar/navbar

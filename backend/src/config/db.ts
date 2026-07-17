@@ -46,6 +46,16 @@ export const ensureDatabaseSchema = async () => {
       ip_address VARCHAR(45),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- Create login_attempts table for login attempt limiting
+    CREATE TABLE IF NOT EXISTS login_attempts (
+      id SERIAL PRIMARY KEY,
+      ip_address VARCHAR(45) NOT NULL UNIQUE,
+      attempt_count INTEGER DEFAULT 0,
+      locked_until TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   schemaEnsured = true;

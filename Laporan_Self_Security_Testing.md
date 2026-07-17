@@ -95,6 +95,27 @@ Password policy berjalan dengan benar.
 
 ---
 
+## Tambahan: Pengujian Batas Percobaan Login (Login Attempt Limiting)
+#### Tujuan
+Memverifikasi bahwa batas percobaan login salah (5x, timeout 10 menit) berjalan dengan benar.
+
+#### Langkah-langkah Pengujian
+1. Buka halaman login
+2. Coba login dengan NIM dan password yang salah (contoh: NIM `admin123`, password `salah123`) → catat pesan error
+3. Ulangi langkah 2 sampai 5x → pastikan pesan error menunjukkan sisa percobaan
+4. Coba login kembali ke-6x → pastikan pesan error menunjukkan terkunci dan waktu tunggu
+5. Tunggu 10 menit (atau untuk testing cepat, kamu bisa ubah `LOCKOUT_DURATION_MINUTES` di `authController.ts` menjadi 1 atau 2 menit) → coba login kembali dengan NIM dan password yang benar
+
+#### Hasil Pengujian
+✅ Setiap login salah menampilkan pesan sisa percobaan
+✅ Setelah 5x login salah, akun terkunci selama 10 menit
+✅ Setelah waktu tunggu selesai, login kembali bisa dilakukan
+
+#### Kesimpulan
+Fitur batas percobaan login berjalan dengan benar.
+
+---
+
 ### 4. Pengujian Validasi & Sanitasi Input (SQL Injection & XSS)
 #### Tujuan
 Memverifikasi bahwa input pengguna tidak menyebabkan SQL Injection atau XSS.
