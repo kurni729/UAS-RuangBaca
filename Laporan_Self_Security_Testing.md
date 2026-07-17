@@ -1,8 +1,8 @@
 # Laporan Self-Security Testing
 Aplikasi RuangBaca - Sistem Perpustakaan Digital
 
-Kelompok: [Isi Nama Kelompok]
-Tanggal Pengujian: [Isi Tanggal]
+Kelompok: 2
+Tanggal Pengujian: 17 Juli 2026
 Versi Aplikasi: 1.0
 
 ---

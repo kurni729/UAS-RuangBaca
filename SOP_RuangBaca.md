@@ -3,12 +3,16 @@ Penggunaan & Pengelolaan Aplikasi RuangBaca
 
 Nama Aplikasi: RuangBaca - Sistem Perpustakaan Digital
 Nomor SOP: SOP-RUANGBACA-001
-Kelompok: [Isi Nama Kelompok Kamu]
+Kelompok: 2
 Versi: 1.0
-Disusun oleh: [Isi Nama Penyusun]
-Tanggal berlaku: [Isi Tanggal]
-Disetujui oleh: [Isi Nama Pihak yang Menyetujui]
-Tinjauan berikutnya: [Isi Tanggal Tinjauan Berikutnya (misal 6 bulan kemudian)]
+Disusun oleh: - Kurniawan
+              - Muhammad Al-Fatih
+              - Muhammad Faisal Bakeri
+              - Nor Halimah
+              - Saudah
+Tanggal berlaku: 17 Juli
+Disetujui oleh: Risqa Taufik M.Kom
+Tinjauan berikutnya: 1 Januari 2027
 
 ---
 
@@ -30,11 +34,36 @@ Ruang lingkup SOP ini mencakup seluruh aktivitas di aplikasi RuangBaca, mulai da
 ---
 
 ## 2. Peran & Tanggung Jawab
-| Peran | Hak Akses | Tanggung Jawab |
-|-------|-----------|----------------|
-| Admin | - Login/logout<br>- Tambah, edit, hapus buku<br>- Konfirmasi peminjaman dan pengembalian<br>- Lihat semua riwayat peminjaman<br>- Tambah, hapus pengguna<br>- Lihat log aktivitas | - Memastikan keamanan akun admin<br>- Mengelola koleksi buku dan pengguna dengan bijak<br>- Meninjau log aktivitas secara berkala<br>- Menangani permintaan peminjaman dan pengembalian dengan cepat<br>- Melaporkan dan menangani insiden keamanan |
-| Pengguna | - Login/logout<br>- Lihat katalog buku<br>- Meminjam buku<br>- Lihat riwayat peminjaman pribadi | - Menjaga keamanan akun (tidak membagikan password)<br>- Meminjam dan mengembalikan buku sesuai aturan<br>- Melaporkan jika menemukan aktivitas mencurigakan |
 
+### Admin
+
+**Hak Akses**
+- Login dan logout
+- Menambah, mengubah, dan menghapus data buku
+- Mengonfirmasi peminjaman dan pengembalian buku
+- Melihat seluruh riwayat peminjaman
+- Menambah dan menghapus pengguna
+- Melihat log aktivitas sistem
+
+**Tanggung Jawab**
+- Menjaga keamanan akun admin
+- Mengelola data buku dan pengguna dengan benar
+- Memantau log aktivitas secara berkala
+- Memproses permintaan peminjaman dan pengembalian secara tepat waktu
+- Menangani dan melaporkan insiden keamanan
+
+### Pengguna
+
+**Hak Akses**
+- Login dan logout
+- Melihat katalog buku
+- Meminjam buku
+- Melihat riwayat peminjaman pribadi
+
+**Tanggung Jawab**
+- Menjaga keamanan akun dan tidak membagikan kata sandi
+- Mematuhi aturan peminjaman dan pengembalian buku
+- Melaporkan aktivitas mencurigakan kepada admin
 ---
 
 ## 3. Prosedur Registrasi & Login yang Aman
@@ -196,4 +225,4 @@ Jika terjadi insiden keamanan (misal akun bocor, akses mencurigakan, kebocoran d
 ## 10. Riwayat Revisi SOP
 | Versi | Tanggal | Perubahan | Oleh |
 |-------|---------|-----------|------|
-| 1.0 | [Isi Tanggal] | Versi awal SOP RuangBaca | [Isi Nama] |
+   -         -           -       - 
