@@ -391,14 +391,10 @@ export default function AdminDashboard() {
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-[280px] z-30 bg-white/80 backdrop-blur-md border-r border-slate-200 shadow-md flex-col p-6 space-y-2 pt-24">
         <div className="flex flex-col items-center mb-8 pb-6 border-b border-slate-200 text-center">
           <div className="w-16 h-16 rounded-lg bg-blue-50 mb-3 flex items-center justify-center border border-slate-200">
-            <img
-              alt="University Crest"
-              className="w-12 h-12 object-contain"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbbVh75F8PjEcQW5KxX6GXTrtzlvfi815vNvPcQyRt-y-DhM6z198Zg0Yd5yNNuXIECY5PPrn6EFg-neOsq_eDLAqz3iogel6HbJe8iA0F6xTgv-s1-g34DZyd7lyDgIXsM8f-XeHn54CIe15GFyIgF36-iq3wRvzcoQDaUXt4JFxKFdtQjSte3sjrmaKqzfRtRoGUAASHU7RXMsY6u4J_uXu8yGqGhJamKJBfrW1OrjD3sWHMGzF9_"
-            />
+            <span className="material-symbols-outlined text-4xl text-blue-600">menu_book</span>
           </div>
           <h2 className="text-xl font-extrabold text-blue-600">RuangBaca</h2>
-          <p className="text-xs text-slate-500 mt-1">Portal Akademik</p>
+          <p className="text-xs text-slate-500 mt-1">Portal Perpustakaan</p>
         </div>
         <nav className="flex-1 space-y-1">
           <button
