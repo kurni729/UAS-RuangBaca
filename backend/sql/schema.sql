@@ -43,13 +43,13 @@ CREATE TABLE IF NOT EXISTS logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Memasukkan data admin contoh (password: admin123, di-hash dengan bcrypt)
+-- Memasukkan data admin contoh (password: Admin123, di-hash dengan bcrypt)
 -- Anda bisa mengganti ini dengan data Anda sendiri
 INSERT INTO users (nim, password, role) 
-VALUES ('admin123', '$2b$10$Ewxx0wFRunwNBQqCV522u.prOkKsghDrsxe8zJW0ej5lqiHiCZu7O', 'admin')
+VALUES ('111111', '$2b$12$3DlM19FA7xVMGiSpORpHOOYHmtAQ0yxEt6wWmyvMQ/Ga.23fhyc.W', 'admin')
 ON CONFLICT (nim) DO NOTHING;
 
--- Memasukkan data user contoh (password: user123)
+-- Memasukkan data user contoh (password: User1234)
 INSERT INTO users (nim, password, role) 
-VALUES ('user123', '$2b$10$6.HgAx77Z3k4JQraa1F5/u.HY7/qetdgvO5/o6NDNnI6VO8dtKqKi', 'user')
+VALUES ('222222', '$2b$12$ksg8BgCMSfO9kWKPk/KYjONRW.XYKaLYF36PN01Onv37fjz1UxbJ2', 'user')
 ON CONFLICT (nim) DO NOTHING;

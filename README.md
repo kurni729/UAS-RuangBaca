@@ -108,15 +108,15 @@ Sistem perpustakaan digital dengan komponen keamanan lengkap untuk Ujian Akhir S
 
 ## Akun Awal
 
-Setelah menjalankan `schema.sql`, kamu dapat login dengan akun berikut:
+Setelah menjalankan `schema.sql`, kamu bisa login dengan akun berikut:
 
 - **Admin**:
-  - NIM: `admin123`
-  - Password: `admin123`
+  - NIM: `111111`
+  - Password: `Admin123`
 
 - **Pengguna**:
-  - NIM: `user123`
-  - Password: `user123`
+  - NIM: `222222`
+  - Password: `User1234`
 
 ---
 

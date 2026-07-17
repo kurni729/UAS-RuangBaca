@@ -12,6 +12,17 @@ Tinjauan berikutnya: [Isi Tanggal Tinjauan Berikutnya (misal 6 bulan kemudian)]
 
 ---
 
+## Akun Awal
+Untuk login pertama kali, kamu bisa gunakan akun berikut:
+- **Admin**:
+  - NIM: `111111`
+  - Password: `Admin123`
+- **Pengguna**:
+  - NIM: `222222`
+  - Password: `User1234`
+
+---
+
 ## 1. Tujuan & Ruang Lingkup
 Tujuan SOP ini adalah untuk memastikan penggunaan dan pengelolaan aplikasi RuangBaca secara aman, efektif, dan sesuai dengan prinsip keamanan perangkat lunak.
 Ruang lingkup SOP ini mencakup seluruh aktivitas di aplikasi RuangBaca, mulai dari registrasi/login, pengelolaan buku dan pengguna, hingga penanganan insiden keamanan.

@@ -7,6 +7,13 @@ Versi Aplikasi: 1.0
 
 ---
 
+## Akun Awal
+Untuk login saat testing, kamu bisa gunakan akun berikut:
+- Admin: NIM `111111`, Password `Admin123`
+- Pengguna: NIM `222222`, Password `User1234`
+
+---
+
 ## Pendahuluan
 Laporan ini berisi hasil pengujian keamanan sendiri terhadap aplikasi RuangBaca. Pengujian dilakukan untuk memverifikasi bahwa 9 komponen keamanan wajib telah diimplementasikan dengan benar dan aplikasi berjalan secara aman.
 
