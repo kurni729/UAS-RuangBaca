@@ -11,6 +11,7 @@ import loanRoutes from './routes/loanRoutes';
 import multer from 'multer';
 
 const app = express();
+app.set('trust proxy', true);
 
 // --- 1. MIDDLEWARE KEAMANAN (Merujuk pada OWASP & Syarat UAS Komponen #1 & #6) ---
 // Helmet: Menambahkan security headers (CSP, X-Frame-Options, dll)

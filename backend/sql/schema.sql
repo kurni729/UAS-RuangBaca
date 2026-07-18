@@ -43,6 +43,16 @@ CREATE TABLE IF NOT EXISTS logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Membuat tabel login_attempts untuk pembatasan percobaan login
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id SERIAL PRIMARY KEY,
+    ip_address VARCHAR(45) NOT NULL UNIQUE,
+    attempt_count INTEGER DEFAULT 0,
+    locked_until TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Memasukkan data admin contoh (password: Admin123, di-hash dengan bcrypt)
 -- Anda bisa mengganti ini dengan data Anda sendiri
 INSERT INTO users (nim, password, role) 
