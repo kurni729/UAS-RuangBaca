@@ -36,7 +36,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // --- 2. MIDDLEWARE STANDAR ---
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000'];
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://uas-ruangbaca.vercel.app'];
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
