@@ -73,6 +73,25 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
+// --- ROUTE DEBUG UNTUK CEK FOLDER UPLOADS ---
+app.get('/api/debug-uploads', async (req, res) => {
+    try {
+        const uploadDir = path.join(process.cwd(), 'uploads');
+        console.log('Upload dir:', uploadDir);
+        console.log('Upload dir exists:', fs.existsSync(uploadDir));
+        const files = fs.existsSync(uploadDir) ? fs.readdirSync(uploadDir) : [];
+        res.status(200).json({ 
+            success: true, 
+            uploadDir,
+            exists: fs.existsSync(uploadDir),
+            files 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Gagal cek folder uploads.' });
+    }
+});
+
 // --- ROUTE UTAMA ---
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
