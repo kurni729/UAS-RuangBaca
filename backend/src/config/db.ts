@@ -1,5 +1,7 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -24,44 +26,15 @@ export const ensureDatabaseSchema = async () => {
     return;
   }
 
-  await pool.query(`
-    ALTER TABLE IF EXISTS books
-    ADD COLUMN IF NOT EXISTS rak VARCHAR(50);
-
-    ALTER TABLE IF EXISTS loans
-    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-
-    -- Fix the status check constraint for loans
-    ALTER TABLE IF EXISTS loans
-    DROP CONSTRAINT IF EXISTS loans_status_check;
-
-    ALTER TABLE IF EXISTS loans
-    ADD CONSTRAINT loans_status_check
-    CHECK (status IN ('pending', 'dipinjam', 'dikembalikan'));
-
-    -- Create logs table if it doesn't exist yet
-    CREATE TABLE IF NOT EXISTS logs (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-      action VARCHAR(100) NOT NULL,
-      details TEXT,
-      ip_address VARCHAR(45),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    -- Create login_attempts table for login attempt limiting
-    CREATE TABLE IF NOT EXISTS login_attempts (
-      id SERIAL PRIMARY KEY,
-      ip_address VARCHAR(45) NOT NULL UNIQUE,
-      attempt_count INTEGER DEFAULT 0,
-      locked_until TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+  // Baca dan jalankan schema.sql
+  const schemaPath = path.join(__dirname, '../../sql/schema.sql');
+  const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+  
+  // Eksekusi schema.sql
+  await pool.query(schemaSql);
 
   schemaEnsured = true;
-  console.log('Skema database diverifikasi.');
+  console.log('Skema database berhasil dibuat.');
 };
 
 export default pool;
