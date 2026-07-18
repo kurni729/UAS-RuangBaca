@@ -54,7 +54,8 @@ app.use(express.json());
 app.use(cookieParser()); // Agar bisa menerima input data berformat JSON
 // --- MEMBUKA AKSES FOLDER UPLOADS KE PUBLIK ---
 // Mengizinkan file di folder uploads dapat diakses dengan URL http://localhost:5000/uploads/namafile.png
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+const uploadsPath = path.join(process.cwd(), 'uploads');
+app.use('/uploads', express.static(uploadsPath));
 
 // --- 3. ROUTE PENGUJIAN KONEKSI DATABASE ---
 app.get('/api/test-db', async (req, res) => {
@@ -94,7 +95,7 @@ const startServer = async () => {
     try {
         await ensureDatabaseSchema();
         // Buat folder uploads jika belum ada
-        const uploadsDir = path.join(__dirname, '../uploads');
+        const uploadsDir = path.join(process.cwd(), 'uploads');
         if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
         }

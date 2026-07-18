@@ -75,7 +75,7 @@ export const updateBook = async (req: AuthRequest, res: Response): Promise<any> 
         // Handle file updates
         if (files?.['cover']) {
             // Delete old cover
-            const uploadDir = path.join(__dirname, '../../uploads');
+            const uploadDir = path.join(process.cwd(), 'uploads');
             if (oldBook.cover_image) {
                 const oldCoverPath = path.join(uploadDir, oldBook.cover_image);
                 if (fs.existsSync(oldCoverPath)) fs.unlinkSync(oldCoverPath);
@@ -85,7 +85,7 @@ export const updateBook = async (req: AuthRequest, res: Response): Promise<any> 
 
         if (files?.['file']) {
             // Delete old file
-            const uploadDir = path.join(__dirname, '../../uploads');
+            const uploadDir = path.join(process.cwd(), 'uploads');
             if (oldBook.file_url) {
                 const oldFilePath = path.join(uploadDir, oldBook.file_url);
                 if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath);
@@ -123,7 +123,7 @@ export const deleteBook = async (req: AuthRequest, res: Response): Promise<any> 
 
         await pool.query('DELETE FROM books WHERE id = $1', [id]);
 
-        const uploadDir = path.join(__dirname, '../../uploads');
+        const uploadDir = path.join(process.cwd(), 'uploads');
         if (book.cover_image) {
             const coverPath = path.join(uploadDir, book.cover_image);
             if (fs.existsSync(coverPath)) fs.unlinkSync(coverPath);
