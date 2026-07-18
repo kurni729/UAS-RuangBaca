@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 
-export const BACKEND_BASE_URL = 'http://localhost:5000';
+export const BACKEND_BASE_URL = 'https://uas-ruangbaca-production.up.railway.app';
 const api = axios.create({
     baseURL: `${BACKEND_BASE_URL}/api`,
     timeout: 10000,
