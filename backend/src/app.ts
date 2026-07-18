@@ -32,7 +32,8 @@ app.use(helmet({
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
   max: 100, 
-  message: 'Terlalu banyak permintaan dari IP ini, silakan coba lagi nanti.'
+  message: 'Terlalu banyak permintaan dari IP ini, silakan coba lagi nanti.',
+  validate: false
 });
 app.use(limiter);
 
