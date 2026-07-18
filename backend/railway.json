@@ -1,9 +1,6 @@
 {
   "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "npm start",
-    "healthcheckPath": "/api/test-db"
+    "builder": "DOCKER",
+    "dockerfilePath": "Dockerfile"
   }
 }
