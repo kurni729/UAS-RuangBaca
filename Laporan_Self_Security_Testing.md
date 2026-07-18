@@ -59,22 +59,24 @@ Otorisasi / RBAC sudah berjalan dengan benar.
 
 ### 3. Pengujian Manajemen Session
 #### Tujuan
-Memverifikasi bahwa HttpOnly Cookie berfungsi dengan benar dan logout menghapus cookie.
+Memverifikasi bahwa Bearer Token disimpan di localStorage dan dikirim via header Authorization, serta logout menghapus token dari localStorage.
 
 #### Langkah-langkah Pengujian
 1. Login dengan akun apa saja
-2. Periksa DevTools Application > Cookies untuk melihat apakah cookie `token` tersimpan dengan flag HttpOnly dan SameSite Strict
-3. Lakukan logout
-4. Periksa kembali cookies (cookie `token` harus dihapus)
-5. Coba kirim request API tanpa cookie token
+2. Periksa DevTools Application > Local Storage untuk melihat apakah token tersimpan
+3. Periksa request API di Network tab untuk melihat apakah header `Authorization: Bearer <token>` dikirim
+4. Lakukan logout
+5. Periksa kembali Local Storage (token dan user data harus dihapus)
+6. Coba kirim request API tanpa token di header Authorization
 
 #### Hasil Pengujian
-✅ Cookie `token` tersimpan dengan flag HttpOnly dan SameSite Strict setelah login
-✅ Cookie `token` dihapus setelah logout
-✅ Request API tanpa cookie ditolak dengan status 401
+✅ Token tersimpan di localStorage setelah login
+✅ Header `Authorization: Bearer <token>` dikirim pada setiap request API yang memerlukan autentikasi
+✅ Token dan user data dihapus dari localStorage setelah logout
+✅ Request API tanpa token ditolak dengan status 401
 
 #### Kesimpulan
-Manajemen session berjalan dengan benar menggunakan HttpOnly Cookie.
+Manajemen session berjalan dengan benar menggunakan Bearer Token di localStorage (karena deploy cross-domain antara Vercel dan Railway).
 
 ---
 

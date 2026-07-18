@@ -83,16 +83,16 @@ Hanya Admin yang dapat mendaftarkan pengguna baru:
 5. Klik "Simpan"
 
 ### Login
-1. Buka halaman login di `http://localhost:5173`
+1. Buka halaman login di `https://uas-ruang-baca.vercel.app` (produksi) atau `http://localhost:5173` (lokal)
 2. Masukkan NIM dan password
 3. Klik tombol "Login"
 4. Jika login salah, Anda akan melihat pesan sisa percobaan login
 5. Jika login salah lebih dari 5 kali berturut-turut, akses dari IP Anda akan terkunci selama 10 menit
-6. Setelah login berhasil, pengguna akan diarahkan ke dashboard sesuai rolenya (token disimpan di HttpOnly Cookie untuk keamanan)
+6. Setelah login berhasil, pengguna akan diarahkan ke dashboard sesuai rolenya (token disimpan di localStorage dan dikirim via header `Authorization: Bearer <token>` untuk keamanan cross-domain)
 
 ### Logout
 1. Klik tombol "Logout" di sidebar/navbar
-2. Cookie autentikasi `token` akan dihapus dari browser
+2. Token autentikasi dan data pengguna dihapus dari localStorage
 3. Pengguna akan diarahkan kembali ke halaman login
 
 ---
@@ -225,4 +225,4 @@ Jika terjadi insiden keamanan (misal akun bocor, akses mencurigakan, kebocoran d
 ## 10. Riwayat Revisi SOP
 | Versi | Tanggal | Perubahan | Oleh |
 |-------|---------|-----------|------|
-   -         -           -       - 
+| 1.1 | 18 Juli 2026 | Ubah strategi autentikasi dari HttpOnly Cookie ke Bearer Token di localStorage untuk mendukung deploy cross-domain (Vercel + Railway) | Kelompok 2 |
