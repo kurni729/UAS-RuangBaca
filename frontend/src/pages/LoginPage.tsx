@@ -20,10 +20,12 @@ export default function LoginPage() {
     try {
         const response = await api.post('/auth/login', { nim, password });
         
-        // Simpan user data (token di HttpOnly Cookie)
+        // Simpan user data dan token di localStorage
         const user = response.data.user;
+        const token = response.data.token;
         const role = user.role;
         localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
 
         // Navigasi berdasarkan role
         if (role === 'admin') {

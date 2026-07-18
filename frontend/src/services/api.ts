@@ -5,8 +5,20 @@ export const BACKEND_BASE_URL = 'https://uas-ruangbaca-production.up.railway.app
 const api = axios.create({
     baseURL: `${BACKEND_BASE_URL}/api`,
     timeout: 10000,
-    withCredentials: true, // Agar cookie dikirimkan ke server
+    withCredentials: false, // Tidak butuh cookie lagi
 });
+
+// Interceptor untuk menambahkan token ke header Authorization
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 // Helper untuk mendapatkan URL cover gambar yang aman
 export function getCoverUrl(coverImage: string | null): string | null {

@@ -8,10 +8,13 @@ export interface AuthRequest extends Request {
 }
 
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction): any => {
-    const token = req.cookies.token;
-    if (!token) {
+    // Baca token dari header Authorization
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'Akses ditolak! Token tidak ditemukan atau format salah.' });
     }
+
+    const token = authHeader.split(' ')[1];
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);

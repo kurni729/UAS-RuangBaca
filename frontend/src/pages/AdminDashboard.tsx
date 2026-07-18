@@ -172,6 +172,7 @@ export default function AdminDashboard() {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
       navigate('/');
       toast.success('Logout berhasil');
     }

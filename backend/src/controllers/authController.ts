@@ -193,19 +193,11 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             { expiresIn: '24h' }
         );
 
-        // 5. Set token sebagai HttpOnly Cookie
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: true, // Selalu gunakan HTTPS
-            sameSite: 'none',
-            maxAge: 24 * 60 * 60 * 1000, // 24 jam
-            path: '/'
-        });
-
         await logAction(user.id, 'SUCCESS_LOGIN', 'User logged in', ipAddress);
 
         res.status(200).json({
             message: 'Login berhasil!',
+            token: token,
             user: { id: user.id, nim: user.nim, role: user.role }
         });
     } catch (error) {
