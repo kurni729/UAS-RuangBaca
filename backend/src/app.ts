@@ -9,6 +9,7 @@ import bookRoutes from './routes/bookRoutes';
 import path from 'path'; 
 import loanRoutes from './routes/loanRoutes';
 import multer from 'multer';
+import fs from 'fs';
 
 const app = express();
 app.set('trust proxy', true);
@@ -19,10 +20,10 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "http://localhost:5000", "https://lh3.googleusercontent.com", "https://books.google.com", "https://*.googleusercontent.com"],
+      imgSrc: ["'self'", "data:", "http://localhost:5000", "https://uas-ruangbaca-production.up.railway.app", "https://lh3.googleusercontent.com", "https://books.google.com", "https://*.googleusercontent.com"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      connectSrc: ["'self'", "http://localhost:5000"],
+      connectSrc: ["'self'", "http://localhost:5000", "https://uas-ruangbaca-production.up.railway.app"],
     },
   },
   crossOriginResourcePolicy: { policy: "cross-origin" }, // Agar gambar upload tidak ditolak oleh browser
@@ -92,6 +93,11 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
         await ensureDatabaseSchema();
+        // Buat folder uploads jika belum ada
+        const uploadsDir = path.join(__dirname, '../uploads');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
         app.listen(PORT, () => {
             console.log(`Server Backend berjalan di http://localhost:${PORT}`);
         });
