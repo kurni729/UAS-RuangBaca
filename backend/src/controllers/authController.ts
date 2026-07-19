@@ -209,12 +209,17 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 // --- FUNGSI LOGOUT ---
 export const logout = async (req: Request, res: Response): Promise<any> => {
     try {
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path: '/'
-        });
+        // Catat log logout
+        const ipAddress = req.ip;
+        const token = req.headers.authorization?.split(' ')[1];
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, JWT_SECRET) as any;
+                await logAction(decoded.id, 'SUCCESS_LOGOUT', 'User logged out', ipAddress);
+            } catch (e) {
+                // Token tidak valid, tidak perlu log
+            }
+        }
         res.status(200).json({ message: 'Logout berhasil!' });
     } catch (error) {
         console.error(error);

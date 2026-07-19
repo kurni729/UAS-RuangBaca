@@ -4,7 +4,7 @@ Penggunaan & Pengelolaan Aplikasi RuangBaca
 Nama Aplikasi: RuangBaca - Sistem Perpustakaan Digital
 Nomor SOP: SOP-RUANGBACA-001
 Kelompok: 2
-Versi: 1.0
+Versi: 1.1
 Disusun oleh: - Kurniawan
               - Muhammad Al-Fatih
               - Muhammad Faisal Bakeri

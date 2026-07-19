@@ -164,5 +164,5 @@ uas-perpustakaan-digital/
 Berikut fitur tambahan untuk meningkatkan keamanan aplikasi:
 
 1. **Password Policy**: Registrasi pengguna baru memerlukan password dengan minimal 8 karakter, kombinasi huruf besar, huruf kecil, dan angka. Diimplementasikan di [authController.ts](file:///c:/myappp/UAS%20Parisqa/uas-perpustakaan-digital/backend/src/controllers/authController.ts#L11-L24).
-2. **HttpOnly SameSite Cookie**: Token autentikasi disimpan sebagai HttpOnly Cookie dengan SameSite Strict, sehingga lebih aman dari XSS dan CSRF. Diimplementasikan di [authController.ts](file:///c:/myappp/UAS%20Parisqa/uas-perpustakaan-digital/backend/src/controllers/authController.ts#L114-L121) dan [api.ts](file:///c:/myappp/UAS%20Parisqa/uas-perpustakaan-digital/frontend/src/services/api.ts#L8).
+2. **Bearer Token di LocalStorage**: Token autentikasi disimpan di localStorage dan dikirim via header `Authorization: Bearer <token>` untuk mendukung deploy cross-domain (Vercel + Railway). Diimplementasikan di [authController.ts](file:///c:/myappp/UAS%20Parisqa/uas-perpustakaan-digital/backend/src/controllers/authController.ts#L189-L202) dan [api.ts](file:///c:/myappp/UAS%20Parisqa/uas-perpustakaan-digital/frontend/src/services/api.ts#L12-L21).
 3. **0 Vulnerabilities dari npm audit**: Hasil scan npm audit menunjukkan 0 vulnerabilities di kedua backend dan frontend.
