@@ -29,15 +29,6 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }, // Agar gambar upload tidak ditolak oleh browser
 }));
 
-// Rate Limiting: Mencegah serangan Brute Force / DDoS (Maks 100 request per 15 menit per IP)
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100, 
-  message: 'Terlalu banyak permintaan dari IP ini, silakan coba lagi nanti.',
-  validate: false
-});
-app.use(limiter);
-
 // --- 2. MIDDLEWARE STANDAR ---
 const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://uas-ruang-baca.vercel.app'];
 app.use(cors({
@@ -49,7 +40,20 @@ app.use(cors({
         }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+// Handle preflight OPTIONS request explicitly
+app.options('*', cors());
+
+// Rate Limiting: HANYA berlaku untuk endpoint login untuk mencegah brute force!
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 menit
+    max: 30, // Batas 30 request login per IP dalam 15 menit (cukup longgar)
+    message: 'Terlalu banyak percobaan login dari IP ini, silakan coba lagi nanti.',
+    validate: false,
+    skip: (request) => request.method === 'OPTIONS' // skip preflight OPTIONS request
+});
 app.use(express.json());
 app.use(cookieParser()); // Agar bisa menerima input data berformat JSON
 // --- MEMBUKA AKSES FOLDER UPLOADS KE PUBLIK ---
@@ -93,6 +97,8 @@ app.get('/api/debug-uploads', async (req, res) => {
 });
 
 // --- ROUTE UTAMA ---
+// Terapkan loginLimiter hanya ke endpoint login!
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/loans', loanRoutes);
