@@ -235,6 +235,14 @@ export default function UserDashboard() {
         </nav>
         <div className="mt-auto space-y-1 pt-4 border-t border-slate-200">
           <button
+            onClick={() => void fetchData({ showLoader: false })}
+            disabled={isRefreshing}
+            className="w-full flex items-center gap-3 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm hover:translate-x-1 transition-transform duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
+            {isRefreshing ? 'Memperbarui...' : 'Refresh Data'}
+          </button>
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm hover:translate-x-1 transition-transform duration-200"
           >
@@ -262,6 +270,13 @@ export default function UserDashboard() {
             }`}
           >
             Riwayat
+          </button>
+          <button
+            onClick={() => void fetchData({ showLoader: false })}
+            disabled={isRefreshing}
+            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold text-sm transition-all hover:bg-slate-200 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
           </button>
         </div>
 

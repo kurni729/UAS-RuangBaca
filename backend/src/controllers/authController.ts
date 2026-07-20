@@ -265,9 +265,15 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<any> 
             return res.status(400).json({ message: 'Anda tidak bisa menghapus akun sendiri!' });
         }
 
+        // Cek apakah user yang akan dihapus adalah admin master
         const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
         if (userResult.rows.length === 0) {
             return res.status(404).json({ message: 'User tidak ditemukan!' });
+        }
+
+        if (userResult.rows[0].is_master) {
+            await logAction(user_id || null, 'FAILED_DELETE_USER', 'Attempt to delete master admin', ipAddress);
+            return res.status(403).json({ message: 'Anda tidak bisa menghapus akun admin master!' });
         }
 
         await pool.query('DELETE FROM users WHERE id = $1', [id]);

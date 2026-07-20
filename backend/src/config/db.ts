@@ -33,6 +33,22 @@ export const ensureDatabaseSchema = async () => {
   // Eksekusi schema.sql
   await pool.query(schemaSql);
 
+  // Migrasi: Tambahkan kolom is_master jika belum ada
+  try {
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_master BOOLEAN DEFAULT FALSE');
+    console.log('Kolom is_master berhasil ditambahkan (jika belum ada).');
+  } catch (error) {
+    console.log('Kolom is_master sudah ada.');
+  }
+
+  // Set akun admin default (111111) menjadi master
+  try {
+    await pool.query("UPDATE users SET is_master = TRUE WHERE nim = '111111'");
+    console.log('Akun admin master berhasil diatur.');
+  } catch (error) {
+    console.log('Gagal mengatur akun admin master:', error);
+  }
+
   schemaEnsured = true;
   console.log('Skema database berhasil dibuat.');
 };

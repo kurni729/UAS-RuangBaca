@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     nim VARCHAR(20) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(10) NOT NULL CHECK (role IN ('admin', 'user')),
+    is_master BOOLEAN DEFAULT FALSE, -- Kolom untuk menandai admin master
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -55,8 +56,8 @@ CREATE TABLE IF NOT EXISTS login_attempts (
 
 -- Memasukkan data admin contoh (password: Admin123, di-hash dengan bcrypt)
 -- Anda bisa mengganti ini dengan data Anda sendiri
-INSERT INTO users (nim, password, role) 
-VALUES ('111111', '$2b$12$3DlM19FA7xVMGiSpORpHOOYHmtAQ0yxEt6wWmyvMQ/Ga.23fhyc.W', 'admin')
+INSERT INTO users (nim, password, role, is_master) 
+VALUES ('111111', '$2b$12$3DlM19FA7xVMGiSpORpHOOYHmtAQ0yxEt6wWmyvMQ/Ga.23fhyc.W', 'admin', TRUE)
 ON CONFLICT (nim) DO NOTHING;
 
 -- Memasukkan data user contoh (password: User1234)

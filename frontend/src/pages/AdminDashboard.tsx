@@ -442,8 +442,16 @@ export default function AdminDashboard() {
         </nav>
         <div className="mt-auto space-y-1 pt-4 border-t border-slate-200">
           <button
+            onClick={() => void fetchData({ showLoader: false })}
+            disabled={isRefreshing}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-2 bg-slate-100 text-slate-700 rounded-lg font-semibold text-sm hover:bg-slate-200 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <span className={`material-symbols-outlined text-sm ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
+            {isRefreshing ? 'Memperbarui...' : 'Refresh Data'}
+          </button>
+          <button
             onClick={() => setIsModalOpen(true)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-4 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors active:scale-[0.98]"
           >
             <span className="material-symbols-outlined text-sm">add</span>
             Tambah Buku
@@ -495,9 +503,16 @@ export default function AdminDashboard() {
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex-1 min-w-[100px] py-2 bg-green-600 text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition-all"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition-all"
           >
-            + Tambah Buku
+            <span className="material-symbols-outlined">add</span>
+          </button>
+          <button
+            onClick={() => void fetchData({ showLoader: false })}
+            disabled={isRefreshing}
+            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold text-sm transition-all hover:bg-slate-200 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
           </button>
         </div>
 
