@@ -26,20 +26,20 @@ export const ensureDatabaseSchema = async () => {
     return;
   }
 
+  // Migrasi 1: Tambahkan kolom is_master jika belum ada
+  try {
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_master BOOLEAN DEFAULT FALSE');
+    console.log('Kolom is_master berhasil ditambahkan (jika belum ada).');
+  } catch (error) {
+    console.log('Kolom is_master sudah ada atau gagal ditambahkan:', error);
+  }
+
   // Baca dan jalankan schema.sql
   const schemaPath = path.join(__dirname, '../../sql/schema.sql');
   const schemaSql = fs.readFileSync(schemaPath, 'utf8');
   
   // Eksekusi schema.sql
   await pool.query(schemaSql);
-
-  // Migrasi: Tambahkan kolom is_master jika belum ada
-  try {
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_master BOOLEAN DEFAULT FALSE');
-    console.log('Kolom is_master berhasil ditambahkan (jika belum ada).');
-  } catch (error) {
-    console.log('Kolom is_master sudah ada.');
-  }
 
   // Set akun admin default (111111) menjadi master
   try {
