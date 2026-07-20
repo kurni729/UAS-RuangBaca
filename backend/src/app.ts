@@ -43,8 +43,6 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-// Handle preflight OPTIONS request explicitly
-app.options('*', cors());
 
 // Rate Limiting: HANYA berlaku untuk endpoint login untuk mencegah brute force!
 const loginLimiter = rateLimit({
