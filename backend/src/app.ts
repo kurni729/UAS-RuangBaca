@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes';
 import bookRoutes from './routes/bookRoutes'; 
 import path from 'path'; 
 import loanRoutes from './routes/loanRoutes';
+import adminRoutes from './routes/adminRoutes';
 import multer from 'multer';
 import fs from 'fs';
 
@@ -100,6 +101,7 @@ app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/loans', loanRoutes);
+app.use('/api/admin', adminRoutes);
 
 // --- MIDDLEWARE PENANGANAN ERROR MULTER ---
 app.use((err: any, req: any, res: any, next: any) => {

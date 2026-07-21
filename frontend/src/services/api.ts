@@ -111,4 +111,24 @@ export const verifyPin = async (mfaToken: string, pin: string) => {
     return response.data;
 };
 
+// Fungsi untuk mendapatkan log aktivitas
+export const getLogs = async (params: any = {}) => {
+    const response = await api.get('/admin/logs', { params });
+    return response.data;
+};
+
+// Fungsi untuk mengekspor data ke Excel
+export const exportData = async () => {
+    const response = await api.get('/admin/export', { responseType: 'blob' });
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'ruangbaca_backup.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+};
+
 export default api;

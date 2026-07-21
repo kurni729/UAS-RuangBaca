@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api, { getApiErrorMessage, requestWithRetry, getCoverUrl, BACKEND_BASE_URL } from '../services/api';
+import api, { getApiErrorMessage, requestWithRetry, getCoverUrl, BACKEND_BASE_URL, exportData } from '../services/api';
 import toast from 'react-hot-toast';
 
 interface Book {
@@ -441,6 +441,13 @@ export default function AdminDashboard() {
             <span className="material-symbols-outlined">group</span>
             Kelola Pengguna
           </button>
+          <button
+            onClick={() => navigate('/admin/logs')}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm hover:translate-x-1 transition-transform duration-200 text-left text-slate-600 hover:bg-slate-100"
+          >
+            <span className="material-symbols-outlined">description</span>
+            Riwayat Log
+          </button>
         </nav>
         <div className="mt-auto space-y-1 pt-4 border-t border-slate-200">
           <button
@@ -457,6 +464,20 @@ export default function AdminDashboard() {
           >
             <span className="material-symbols-outlined text-sm">add</span>
             Tambah Buku
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await exportData();
+                toast.success('Data berhasil diekspor!');
+              } catch (error: any) {
+                toast.error('Gagal mengekspor data');
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-2 bg-green-600 text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition-colors active:scale-[0.98]"
+          >
+            <span className="material-symbols-outlined text-sm">download</span>
+            Backup Data
           </button>
           <button
             onClick={handleLogout}
