@@ -193,20 +193,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             { expiresIn: '24h' }
         );
 
-        // 5. Kirim token sebagai HttpOnly Cookie
-        const isProduction = process.env.NODE_ENV === 'production';
-        res.cookie('auth_token', token, {
-            httpOnly: true,
-            secure: isProduction, // true di production (HTTPS), false di localhost
-            sameSite: isProduction ? 'none' : 'lax', // none untuk cross-domain prod, lax untuk dev
-            maxAge: 24 * 60 * 60 * 1000, // 24 jam dalam milidetik
-            path: '/'
-        });
-
+        // 5. Kirim token di response body (untuk kompatibilitas)
         await logAction(user.id, 'SUCCESS_LOGIN', 'User logged in', ipAddress);
 
         res.status(200).json({
             message: 'Login berhasil!',
+            token: token,
             user: { id: user.id, nim: user.nim, role: user.role }
         });
     } catch (error) {
@@ -216,24 +208,19 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 };
 
 // --- FUNGSI LOGOUT ---
-export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
+export const logout = async (req: Request, res: Response): Promise<any> => {
     try {
         // Catat log logout
         const ipAddress = req.ip;
-        const user_id = req.user?.id;
-        if (user_id) {
-            await logAction(user_id, 'SUCCESS_LOGOUT', 'User logged out', ipAddress);
+        const token = req.headers.authorization?.split(' ')[1];
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, JWT_SECRET) as any;
+                await logAction(decoded.id, 'SUCCESS_LOGOUT', 'User logged out', ipAddress);
+            } catch (e) {
+                // Token tidak valid, tidak perlu log
+            }
         }
-
-        // Hapus cookie auth_token
-        const isProduction = process.env.NODE_ENV === 'production';
-        res.clearCookie('auth_token', {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? 'none' : 'lax',
-            path: '/'
-        });
-
         res.status(200).json({ message: 'Logout berhasil!' });
     } catch (error) {
         console.error(error);
@@ -293,20 +280,6 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<any> 
         await pool.query('DELETE FROM users WHERE id = $1', [id]);
         await logAction(user_id, 'DELETE_USER', `Deleted user ID: ${id}`, ipAddress);
         res.status(200).json({ message: 'User berhasil dihapus!' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
-    }
-};
-
-// --- FUNGSI GET CURRENT USER (ME) ---
-export const getMe = async (req: AuthRequest, res: Response): Promise<any> => {
-    try {
-        const user = req.user;
-        if (!user) {
-            return res.status(401).json({ message: 'Tidak terautentikasi!' });
-        }
-        res.status(200).json({ user: { id: user.id, nim: user.nim, role: user.role } });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
