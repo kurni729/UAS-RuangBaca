@@ -68,6 +68,7 @@ export default function AdminDashboard() {
   const [userNim, setUserNim] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [userRole, setUserRole] = useState<'admin' | 'user'>('user');
+  const [userPin, setUserPin] = useState('');
 
   // Get user info from localStorage
   const userStr = localStorage.getItem('user');
@@ -257,12 +258,13 @@ export default function AdminDashboard() {
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/auth/register', { nim: userNim, password: userPassword, role: userRole });
+      await api.post('/auth/register', { nim: userNim, password: userPassword, role: userRole, pin: userRole === 'admin' ? userPin : undefined });
       toast.success('Pengguna berhasil ditambahkan!');
       setIsUserModalOpen(false);
       setUserNim('');
       setUserPassword('');
       setUserRole('user');
+      setUserPin('');
       void fetchData({ showLoader: false });
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Gagal menambahkan pengguna');
@@ -1166,7 +1168,10 @@ export default function AdminDashboard() {
                         name="role"
                         value="user"
                         checked={userRole === 'user'}
-                        onChange={(e) => setUserRole(e.target.value as 'user')}
+                        onChange={(e) => {
+                          setUserRole(e.target.value as 'user');
+                          setUserPin('');
+                        }}
                         className="w-4 h-4 text-blue-600"
                       />
                       <span className="text-sm text-slate-700">User</span>
@@ -1184,6 +1189,20 @@ export default function AdminDashboard() {
                     </label>
                   </div>
                 </div>
+                {userRole === 'admin' && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-slate-600">PIN (6 digit)</label>
+                    <input
+                      type="text"
+                      value={userPin}
+                      onChange={(e) => setUserPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      required
+                      className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-slate-900 outline-none"
+                      placeholder="Masukkan 6 digit PIN"
+                      maxLength={6}
+                    />
+                  </div>
+                )}
               </div>
               <div className="px-8 py-5 border-t border-slate-200 flex justify-end items-center gap-4 bg-slate-50">
                 <button

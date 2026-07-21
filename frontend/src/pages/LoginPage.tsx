@@ -19,10 +19,24 @@ export default function LoginPage() {
 
     try {
         const response = await api.post('/auth/login', { nim, password });
-        
-        // Simpan user data dan token di localStorage
-        const user = response.data.user;
-        const token = response.data.token;
+        const data = response.data;
+
+        // Jika MFA diperlukan
+        if (data.mfa_required) {
+            toast.success(data.message);
+            // Navigasi ke halaman verifikasi PIN dengan state
+            navigate('/verify-pin', {
+                state: {
+                    mfa_token: data.mfa_token,
+                    user: data.user
+                }
+            });
+            return;
+        }
+
+        // Jika tidak MFA (user biasa), lanjut seperti biasa
+        const user = data.user;
+        const token = data.token;
         const role = user.role;
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('token', token);

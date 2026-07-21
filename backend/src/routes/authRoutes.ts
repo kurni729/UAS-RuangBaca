@@ -1,11 +1,14 @@
 import { Router } from 'express';
-import { register, login, logout, getUsers, deleteUser } from '../controllers/authController';
+import { register, login, logout, getUsers, deleteUser, verifyPin } from '../controllers/authController';
 import { verifyToken, isAdmin } from '../middlewares/authMiddleware';
 
 const router = Router();
 
 // Route untuk login (public)
 router.post('/login', login);
+
+// Route untuk verifikasi PIN (MFA) (public, but requires mfa_token)
+router.post('/verify-pin', verifyPin);
 
 // Route untuk logout (butuh token)
 router.post('/logout', verifyToken, logout);

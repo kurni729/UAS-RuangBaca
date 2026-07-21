@@ -82,7 +82,7 @@ const isPasswordStrong = (password: string): { valid: boolean; message: string }
 // --- FUNGSI REGISTRASI (HANYA ADMIN) ---
 export const register = async (req: AuthRequest, res: Response): Promise<any> => {
     try {
-        const { nim, password, role } = req.body;
+        const { nim, password, role, pin } = req.body;
         const user_id = req.user?.id;
         const user_role = req.user?.role;
         const ipAddress = req.ip;
@@ -103,26 +103,37 @@ export const register = async (req: AuthRequest, res: Response): Promise<any> =>
             return res.status(400).json({ message: 'Role harus admin atau user!' });
         }
 
-        // 4. Password Policy Check
+        // 4. Validasi PIN untuk admin
+        if (role === 'admin') {
+            if (!pin || !/^\d{6}$/.test(pin)) {
+                return res.status(400).json({ message: 'PIN harus 6 digit angka untuk admin!' });
+            }
+        }
+
+        // 5. Password Policy Check
         const passwordCheck = isPasswordStrong(password);
         if (!passwordCheck.valid) {
             return res.status(400).json({ message: passwordCheck.message });
         }
 
-        // 5. Cek apakah NIM sudah terdaftar
+        // 6. Cek apakah NIM sudah terdaftar
         const userExist = await pool.query('SELECT * FROM users WHERE nim = $1', [nim]);
         if (userExist.rows.length > 0) {
             return res.status(400).json({ message: 'NIM sudah terdaftar!' });
         }
 
-        // 6. Hashing password menggunakan bcrypt (OWASP Recommended)
+        // 7. Hashing password dan PIN (jika admin) menggunakan bcrypt (OWASP Recommended)
         const saltRounds = 12;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
+        let hashedPin = null;
+        if (role === 'admin' && pin) {
+            hashedPin = await bcrypt.hash(pin, saltRounds);
+        }
 
-        // 7. Simpan ke database
+        // 8. Simpan ke database
         const newUser = await pool.query(
-            'INSERT INTO users (nim, password, role) VALUES ($1, $2, $3) RETURNING id, nim, role',
-            [nim, hashedPassword, role]
+            'INSERT INTO users (nim, password, role, pin) VALUES ($1, $2, $3, $4) RETURNING id, nim, role',
+            [nim, hashedPassword, role, hashedPin]
         );
 
         await logAction(user_id, 'REGISTER_USER', `Registered user ${nim} as ${role}`, ipAddress);
@@ -183,21 +194,128 @@ export const login = async (req: Request, res: Response): Promise<any> => {
             return res.status(401).json({ message: errorMessage });
         }
 
-        // 3. Reset login attempt setelah login berhasil
+        // 3. Jika user adalah admin dan memiliki PIN, berikan mfa_token untuk verifikasi PIN
+        if (user.role === 'admin' && user.pin) {
+            await logAction(user.id, 'MFA_REQUIRED', 'Admin login successful, PIN verification required', ipAddress);
+            
+            // Buat temporary MFA token (berlaku 5 menit)
+            const mfaToken = jwt.sign(
+                { id: user.id, nim: user.nim, role: user.role, type: 'mfa' }, 
+                JWT_SECRET, 
+                { expiresIn: '5m' }
+            );
+
+            return res.status(200).json({
+                message: 'Login berhasil! Silakan verifikasi PIN Anda.',
+                mfa_required: true,
+                mfa_token: mfaToken,
+                user: { id: user.id, nim: user.nim, role: user.role }
+            });
+        }
+
+        // 4. Reset login attempt setelah login berhasil
         await resetLoginAttempt(ipAddress);
 
-        // 4. Buat JSON Web Token (JWT)
+        // 5. Buat JSON Web Token (JWT) untuk user biasa
         const token = jwt.sign(
             { id: user.id, nim: user.nim, role: user.role }, 
             JWT_SECRET, 
             { expiresIn: '24h' }
         );
 
-        // 5. Kirim token di response body (untuk kompatibilitas)
+        // 6. Kirim token di response body (untuk user biasa)
         await logAction(user.id, 'SUCCESS_LOGIN', 'User logged in', ipAddress);
 
         res.status(200).json({
             message: 'Login berhasil!',
+            mfa_required: false,
+            token: token,
+            user: { id: user.id, nim: user.nim, role: user.role }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
+    }
+};
+
+// --- FUNGSI VERIFIKASI PIN (MFA) ---
+export const verifyPin = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { mfa_token, pin } = req.body;
+        const ipAddress = req.ip;
+
+        // 0. Cek apakah IP sedang terkunci
+        const existingAttempt = await getLoginAttempt(ipAddress);
+        if (existingAttempt && existingAttempt.locked_until && new Date(existingAttempt.locked_until) > new Date()) {
+            const timeLeftMs = new Date(existingAttempt.locked_until).getTime() - Date.now();
+            const timeLeftMinutes = Math.ceil(timeLeftMs / (1000 * 60));
+            await logAction(null, 'FAILED_MFA', `Locked out attempt from IP: ${ipAddress}`, ipAddress);
+            return res.status(429).json({ 
+                message: `Terlalu banyak percobaan yang salah! Silakan coba lagi dalam ${timeLeftMinutes} menit.` 
+            });
+        }
+
+        // 1. Verifikasi MFA token
+        let decoded;
+        try {
+            decoded = jwt.verify(mfa_token, JWT_SECRET) as any;
+            if (decoded.type !== 'mfa') {
+                return res.status(401).json({ message: 'Token MFA tidak valid!' });
+            }
+        } catch (error) {
+            await logAction(null, 'FAILED_MFA', 'Invalid or expired MFA token', ipAddress);
+            return res.status(401).json({ message: 'Token MFA tidak valid atau sudah kadaluarsa!' });
+        }
+
+        // 2. Cari user berdasarkan ID dari token
+        const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+        if (userResult.rows.length === 0) {
+            await logAction(null, 'FAILED_MFA', 'User not found for MFA', ipAddress);
+            return res.status(401).json({ message: 'User tidak ditemukan!' });
+        }
+
+        const user = userResult.rows[0];
+
+        // 3. Validasi PIN (6 digit)
+        if (!pin || !/^\d{6}$/.test(pin)) {
+            await logAction(user.id, 'FAILED_MFA', 'Invalid PIN format', ipAddress);
+            return res.status(400).json({ message: 'PIN harus berupa 6 digit angka!' });
+        }
+
+        // 4. Verifikasi PIN
+        const isPinMatch = await bcrypt.compare(pin, user.pin);
+        if (!isPinMatch) {
+            // Increment attempt count
+            const newAttempt = await incrementLoginAttempt(ipAddress);
+            const attemptsLeft = MAX_LOGIN_ATTEMPTS - newAttempt.attempt_count;
+            
+            await logAction(user.id, 'FAILED_MFA', `Invalid PIN for admin: ${user.nim}`, ipAddress);
+            
+            let errorMessage = 'PIN salah!';
+            if (attemptsLeft > 0) {
+                errorMessage += ` Anda memiliki ${attemptsLeft} percobaan lagi.`;
+            } else {
+                errorMessage += ` Akun Anda terkunci selama ${LOCKOUT_DURATION_MINUTES} menit.`;
+            }
+            
+            return res.status(401).json({ message: errorMessage });
+        }
+
+        // 5. Reset login attempt setelah PIN berhasil
+        await resetLoginAttempt(ipAddress);
+
+        // 6. Buat JWT token utama
+        const token = jwt.sign(
+            { id: user.id, nim: user.nim, role: user.role }, 
+            JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+
+        // 7. Log successful MFA
+        await logAction(user.id, 'SUCCESS_MFA', 'Admin PIN verified successfully', ipAddress);
+
+        res.status(200).json({
+            message: 'Verifikasi PIN berhasil!',
             token: token,
             user: { id: user.id, nim: user.nim, role: user.role }
         });
@@ -262,7 +380,7 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<any> 
             return res.status(403).json({ message: 'Akses ditolak!' });
         }
 
-        if (parseInt(id) === user_id) {
+        if (parseInt(id as string) === user_id) {
             return res.status(400).json({ message: 'Anda tidak bisa menghapus akun sendiri!' });
         }
 

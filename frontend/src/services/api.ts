@@ -95,7 +95,7 @@ export const getApiErrorMessage = (error: unknown, fallback = 'Terjadi kesalahan
     }
 
     if (error.response.status === 429) {
-        return 'Terlalu banyak permintaan dalam waktu singkat. Silakan tunggu sebentar lalu coba lagi.';
+        return messageFromServer || 'Terlalu banyak permintaan dalam waktu singkat. Silakan tunggu sebentar lalu coba lagi.';
     }
 
     if (error.response.status >= 500) {
@@ -103,6 +103,12 @@ export const getApiErrorMessage = (error: unknown, fallback = 'Terjadi kesalahan
     }
 
     return messageFromServer || fallback;
+};
+
+// Fungsi untuk verifikasi PIN MFA
+export const verifyPin = async (mfaToken: string, pin: string) => {
+    const response = await api.post('/auth/verify-pin', { mfa_token: mfaToken, pin });
+    return response.data;
 };
 
 export default api;

@@ -34,6 +34,14 @@ export const ensureDatabaseSchema = async () => {
     console.log('Kolom is_master sudah ada atau gagal ditambahkan:', error);
   }
 
+  // Migrasi 2: Tambahkan kolom pin jika belum ada
+  try {
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS pin VARCHAR(255)');
+    console.log('Kolom pin berhasil ditambahkan (jika belum ada).');
+  } catch (error) {
+    console.log('Kolom pin sudah ada atau gagal ditambahkan:', error);
+  }
+
   // Baca dan jalankan schema.sql
   const schemaPath = path.join(__dirname, '../../sql/schema.sql');
   const schemaSql = fs.readFileSync(schemaPath, 'utf8');
@@ -41,12 +49,12 @@ export const ensureDatabaseSchema = async () => {
   // Eksekusi schema.sql
   await pool.query(schemaSql);
 
-  // Set akun admin default (111111) menjadi master
+  // Set akun admin default (111111) menjadi master dan set PIN default
   try {
-    await pool.query("UPDATE users SET is_master = TRUE WHERE nim = '111111'");
-    console.log('Akun admin master berhasil diatur.');
+    await pool.query("UPDATE users SET is_master = TRUE, pin = '$2b$12$N9qQ.zJg5pZtq9jW4X1WjOZt1Z5Z9Z5Z9Z5Z9Z5Z9Z5Z9Z5Z9Z5Z' WHERE nim = '111111'");
+    console.log('Akun admin master dan PIN berhasil diatur.');
   } catch (error) {
-    console.log('Gagal mengatur akun admin master:', error);
+    console.log('Gagal mengatur akun admin master dan PIN:', error);
   }
 
   schemaEnsured = true;

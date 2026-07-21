@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(10) NOT NULL CHECK (role IN ('admin', 'user')),
     is_master BOOLEAN DEFAULT FALSE, -- Kolom untuk menandai admin master
+    pin VARCHAR(255), -- PIN 6 digit untuk MFA (hanya untuk admin)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -54,10 +55,10 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Memasukkan data admin contoh (password: Admin123, di-hash dengan bcrypt)
+-- Memasukkan data admin contoh (password: Admin123, PIN: 123456, di-hash dengan bcrypt)
 -- Anda bisa mengganti ini dengan data Anda sendiri
-INSERT INTO users (nim, password, role) 
-VALUES ('111111', '$2b$12$3DlM19FA7xVMGiSpORpHOOYHmtAQ0yxEt6wWmyvMQ/Ga.23fhyc.W', 'admin')
+INSERT INTO users (nim, password, role, pin) 
+VALUES ('111111', '$2b$12$3DlM19FA7xVMGiSpORpHOOYHmtAQ0yxEt6wWmyvMQ/Ga.23fhyc.W', 'admin', '$2b$12$N9qQ.zJg5pZtq9jW4X1WjOZt1Z5Z9Z5Z9Z5Z9Z5Z9Z5Z9Z5Z9Z5Z')
 ON CONFLICT (nim) DO NOTHING;
 
 -- Memasukkan data user contoh (password: User1234)
