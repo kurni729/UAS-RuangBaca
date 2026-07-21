@@ -5,20 +5,8 @@ export const BACKEND_BASE_URL = 'https://uas-ruangbaca-production.up.railway.app
 const api = axios.create({
     baseURL: `${BACKEND_BASE_URL}/api`,
     timeout: 10000,
-    withCredentials: false, // Tidak butuh cookie lagi
+    withCredentials: true, // Butuh cookie untuk autentikasi
 });
-
-// Interceptor untuk menambahkan token ke header Authorization
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
 
 // Helper untuk mendapatkan URL cover gambar yang aman
 export function getCoverUrl(coverImage: string | null): string | null {
@@ -36,6 +24,7 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             localStorage.removeItem('user');
+            localStorage.removeItem('token');
             window.location.href = '/';
         }
         return Promise.reject(error);
