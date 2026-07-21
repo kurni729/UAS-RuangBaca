@@ -9,18 +9,29 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MINUTES = 10;
 
-// Helper: Get login attempt by IP
+// Helper: Get login attempt by IP (and reset if lock expired)
 const getLoginAttempt = async (ipAddress: string) => {
   const result = await pool.query(
     'SELECT * FROM login_attempts WHERE ip_address = $1',
     [ipAddress]
   );
-  return result.rows[0] || null;
+  const attempt = result.rows[0] || null;
+  
+  // If lock has expired, reset attempt count and lock
+  if (attempt && attempt.locked_until && new Date(attempt.locked_until) <= new Date()) {
+    await pool.query(
+      'UPDATE login_attempts SET attempt_count = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE ip_address = $1',
+      [ipAddress]
+    );
+    return { ...attempt, attempt_count: 0, locked_until: null };
+  }
+  
+  return attempt;
 };
 
 // Helper: Increment login attempt
 const incrementLoginAttempt = async (ipAddress: string) => {
-  const existing = await getLoginAttempt(ipAddress);
+  let existing = await getLoginAttempt(ipAddress);
   
   if (!existing) {
     // First attempt: create new record
