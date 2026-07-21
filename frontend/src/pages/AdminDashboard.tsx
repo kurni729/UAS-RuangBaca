@@ -35,12 +35,23 @@ interface ApiListResponse<T> {
   data: T[];
 }
 
+interface Log {
+  id: number;
+  user_id: number | null;
+  action: string;
+  details: string;
+  ip_address: string | null;
+  created_at: string;
+  nim: string | null;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'books' | 'loans' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'books' | 'loans' | 'users' | 'logs'>('overview');
   const [books, setBooks] = useState<Book[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [logs, setLogs] = useState<Log[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -55,7 +66,16 @@ export default function AdminDashboard() {
   const [booksError, setBooksError] = useState<string | null>(null);
   const [loansError, setLoansError] = useState<string | null>(null);
   const [usersError, setUsersError] = useState<string | null>(null);
+  const [logsError, setLogsError] = useState<string | null>(null);
   const [pageNotice, setPageNotice] = useState<string | null>(null);
+  // Logs filter state
+  const [logFilters, setLogFilters] = useState({
+    action: '',
+    user_id: '',
+    start_date: '',
+    end_date: '',
+    search: ''
+  });
 
   // Form state
   const [title, setTitle] = useState('');
@@ -73,6 +93,27 @@ export default function AdminDashboard() {
   // Get user info from localStorage
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
+
+  const fetchLogs = useCallback(async ({ showLoader = true }: { showLoader?: boolean } = {}) => {
+    if (showLoader) {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
+    try {
+      const response = await api.get('/admin/logs', { params: logFilters });
+      setLogs(response.data.logs);
+      setLogsError(null);
+    } catch (error: any) {
+      const errorMsg = getApiErrorMessage(error, 'Gagal memuat log aktivitas');
+      setLogsError(errorMsg);
+      setLogs([]);
+      toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [logFilters]);
 
   const fetchData = useCallback(async ({ showLoader = true }: { showLoader?: boolean } = {}) => {
     if (showLoader) {
@@ -146,8 +187,12 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    void fetchData();
-  }, [fetchData]);
+    if (activeTab === 'logs') {
+      void fetchLogs();
+    } else {
+      void fetchData();
+    }
+  }, [fetchData, fetchLogs, activeTab]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -356,7 +401,9 @@ export default function AdminDashboard() {
       ? booksError
       : activeTab === 'loans' || activeTab === 'overview'
         ? loansError
-        : usersError;
+        : activeTab === 'users'
+          ? usersError
+          : logsError;
 
   return (
     <div className="bg-[#f9f9ff] text-[#111c2d] min-h-screen flex flex-col font-sans relative">
@@ -442,8 +489,10 @@ export default function AdminDashboard() {
             Kelola Pengguna
           </button>
           <button
-            onClick={() => navigate('/admin/logs')}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm hover:translate-x-1 transition-transform duration-200 text-left text-slate-600 hover:bg-slate-100"
+            onClick={() => setActiveTab('logs')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-sm hover:translate-x-1 transition-transform duration-200 text-left ${
+              activeTab === 'logs' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-100'
+            }`}
           >
             <span className="material-symbols-outlined">description</span>
             Riwayat Log
@@ -523,6 +572,14 @@ export default function AdminDashboard() {
             }`}
           >
             Pengguna
+          </button>
+          <button
+            onClick={() => setActiveTab('logs')}
+            className={`flex-1 min-w-[100px] py-2 rounded-lg font-semibold text-sm transition-all ${
+              activeTab === 'logs' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600'
+            }`}
+          >
+            Logs
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -849,7 +906,7 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'users' ? (
           <div>
             <div className="flex justify-between items-end mb-6 border-b border-slate-200 pb-4">
               <div>
@@ -917,6 +974,166 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </div>
+        ) : activeTab === 'logs' ? (
+          <div>
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-slate-900">Riwayat Log Aktivitas</h1>
+              <p className="text-sm text-slate-500 mt-1">Catat semua aktivitas yang terjadi di sistem</p>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-600 mb-2">Kategori Aktivitas</label>
+                  <select
+                    name="action"
+                    value={logFilters.action}
+                    onChange={(e) => setLogFilters({ ...logFilters, action: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-slate-900 outline-none"
+                  >
+                    <option value="">Semua</option>
+                    <option value="SUCCESS_LOGIN">Login Berhasil</option>
+                    <option value="FAILED_LOGIN">Login Gagal</option>
+                    <option value="MFA_REQUIRED">MFA Diperlukan</option>
+                    <option value="SUCCESS_MFA">MFA Berhasil</option>
+                    <option value="FAILED_MFA">MFA Gagal</option>
+                    <option value="REGISTER_USER">Register User</option>
+                    <option value="VIEW_LOGS">Lihat Log</option>
+                    <option value="EXPORT_DATA">Export Data</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-600 mb-2">ID Pengguna</label>
+                  <input
+                    type="number"
+                    name="user_id"
+                    value={logFilters.user_id}
+                    onChange={(e) => setLogFilters({ ...logFilters, user_id: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-slate-900 outline-none"
+                    placeholder="ID Pengguna"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-600 mb-2">Tanggal Mulai</label>
+                  <input
+                    type="date"
+                    name="start_date"
+                    value={logFilters.start_date}
+                    onChange={(e) => setLogFilters({ ...logFilters, start_date: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-slate-900 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-600 mb-2">Tanggal Akhir</label>
+                  <input
+                    type="date"
+                    name="end_date"
+                    value={logFilters.end_date}
+                    onChange={(e) => setLogFilters({ ...logFilters, end_date: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-slate-900 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-600 mb-2">Pencarian</label>
+                  <input
+                    type="text"
+                    name="search"
+                    value={logFilters.search}
+                    onChange={(e) => setLogFilters({ ...logFilters, search: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-slate-900 outline-none"
+                    placeholder="Cari..."
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => fetchLogs({ showLoader: false })}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors"
+                >
+                  Terapkan Filter
+                </button>
+                <button
+                  onClick={() => {
+                    setLogFilters({
+                      action: '',
+                      user_id: '',
+                      start_date: '',
+                      end_date: '',
+                      search: ''
+                    });
+                  }}
+                  className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-semibold text-sm hover:bg-slate-300 transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            {/* Logs Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              {isLoading ? (
+                <div className="flex flex-col justify-center items-center py-20 gap-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <p className="text-sm text-slate-500">Memuat log aktivitas...</p>
+                </div>
+              ) : logs.length === 0 ? (
+                <div className="text-center py-20">
+                  <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">description</span>
+                  <p className="text-lg text-slate-600 mb-2">
+                    {logsError ? 'Gagal memuat log aktivitas' : 'Belum ada log aktivitas'}
+                  </p>
+                  <p className="text-sm text-slate-500">{logsError || 'Data akan muncul di sini saat ada aktivitas.'}</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Waktu</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Pengguna</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Detail</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">IP Address</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-slate-200">
+                      {logs.map((log) => (
+                        <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {new Date(log.created_at).toLocaleString('id-ID')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {log.nim || 'System'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              log.action.includes('SUCCESS') ? 'bg-green-100 text-green-800' :
+                              log.action.includes('FAILED') ? 'bg-red-100 text-red-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {log.action}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-500">
+                            {log.details}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {log.ip_address}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col justify-center items-center py-20">
+            <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">error</span>
+            <p className="text-lg text-slate-600">Tab tidak ditemukan</p>
           </div>
         )}
       </main>
