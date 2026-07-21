@@ -51,7 +51,7 @@ export const ensureDatabaseSchema = async () => {
 
   // Set akun admin default (111111) menjadi master dan set PIN default
   try {
-    await pool.query("UPDATE users SET is_master = TRUE, pin = '$2b$12$N9qQ.zJg5pZtq9jW4X1WjOZt1Z5Z9Z5Z9Z5Z9Z5Z9Z5Z9Z5Z9Z5Z' WHERE nim = '111111'");
+    await pool.query("UPDATE users SET is_master = TRUE, pin = '$2b$12$QoREh3G7X8GNlWE2lWJ8ouQ8ANx5m8QRoCxP18Pv5WWcOu8Yu7AJW' WHERE nim = '111111'");
     console.log('Akun admin master dan PIN berhasil diatur.');
   } catch (error) {
     console.log('Gagal mengatur akun admin master dan PIN:', error);

@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS login_attempts (
 -- Memasukkan data admin contoh (password: Admin123, PIN: 123456, di-hash dengan bcrypt)
 -- Anda bisa mengganti ini dengan data Anda sendiri
 INSERT INTO users (nim, password, role, pin) 
-VALUES ('111111', '$2b$12$3DlM19FA7xVMGiSpORpHOOYHmtAQ0yxEt6wWmyvMQ/Ga.23fhyc.W', 'admin', '$2b$12$N9qQ.zJg5pZtq9jW4X1WjOZt1Z5Z9Z5Z9Z5Z9Z5Z9Z5Z9Z5Z9Z5Z')
+VALUES ('111111', '$2b$12$3DlM19FA7xVMGiSpORpHOOYHmtAQ0yxEt6wWmyvMQ/Ga.23fhyc.W', 'admin', '$2b$12$QoREh3G7X8GNlWE2lWJ8ouQ8ANx5m8QRoCxP18Pv5WWcOu8Yu7AJW')
 ON CONFLICT (nim) DO NOTHING;
 
 -- Memasukkan data user contoh (password: User1234)
