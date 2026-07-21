@@ -194,10 +194,11 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         );
 
         // 5. Kirim token sebagai HttpOnly Cookie
+        const isProduction = process.env.NODE_ENV === 'production';
         res.cookie('auth_token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // true di production
-            sameSite: 'none', // untuk cross-domain (Vercel <-> Railway)
+            secure: isProduction, // true di production (HTTPS), false di localhost
+            sameSite: isProduction ? 'none' : 'lax', // none untuk cross-domain prod, lax untuk dev
             maxAge: 24 * 60 * 60 * 1000, // 24 jam dalam milidetik
             path: '/'
         });
@@ -225,10 +226,11 @@ export const logout = async (req: AuthRequest, res: Response): Promise<any> => {
         }
 
         // Hapus cookie auth_token
+        const isProduction = process.env.NODE_ENV === 'production';
         res.clearCookie('auth_token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none',
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
             path: '/'
         });
 
